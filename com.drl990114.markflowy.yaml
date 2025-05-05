@@ -1,31 +1,3 @@
-# Flatpak Manifest for MarkFlowy
-app-id: com.drl990114.markflowy
-runtime: org.gnome.Platform
-runtime-version: '46' # Provides recent GTK/WebKit and hopefully GLIBC >= 2.39
-sdk: org.gnome.Sdk//46
-
-command: MarkFlowy # Executable name from tauri.conf.json
-
-finish-args:
-  # Display server access
-  - --socket=fallback-x11
-  - --socket=wayland
-  # Needed for GL rendering, WebGL
-  - --device=dri
-  # Inter-process communication (needed by Tauri)
-  - --share=ipc
-  # Network access (Needed for AI features, updates)
-  - --share=network
-  # Filesystem access (Start broad, restrict later if possible)
-  - --filesystem=home
-  # D-Bus access for portals (file chooser, etc.)
-  - --talk-name=org.freedesktop.portal.Desktop
-  - --talk-name=org.freedesktop.portal.Documents
-  # Notifications (if used)
-  # - --talk-name=org.freedesktop.Notifications
-
-# Use shared modules for build tools if available
-# Using rustup to manage the specific Rust toolchain version
 modules:
   - name: yarn
     buildsystem: simple
@@ -51,7 +23,7 @@ modules:
         RUSTFLAGS: "-C strip=symbols -D warnings"
 
     build-commands:
-      - # --- Install Build Dependencies --- # <-- Corrected
+      - # --- Install Build Dependencies --- # <-- Added hyphen
       # List derived from .github/workflows/tauri-release.yml
       - apt-get update && apt-get install -y --no-install-recommends apt-utils # Ensure apt-utils for recommends handling
       - apt-get install -y --no-install-recommends \
@@ -72,14 +44,14 @@ modules:
           curl \
           ca-certificates
 
-      - # --- Setup Rust Toolchain --- # <-- Corrected
+      - # --- Setup Rust Toolchain --- # <-- Added hyphen
       # Install rustup if not present (should be in recent SDKs) or ensure it's usable
       - export PATH=$PATH:/usr/bin # Ensure standard tools are found
       # Set the specific toolchain required by the project
       - rustup toolchain install 1.85 --profile minimal
       - rustup default 1.85
 
-      - # --- Frontend & Backend Build --- # <-- Corrected
+      - # --- Frontend & Backend Build --- # <-- Added hyphen
       # Install Node.js dependencies using Yarn (v4.8.0 installed in previous module)
       - yarn install --frozen-lockfile --ignore-engines # --ignore-engines might be needed if SDK node isn't exactly v22
 
@@ -93,7 +65,7 @@ modules:
       # This invokes `cargo tauri build ...` internally
       - yarn tauri build --release --no-bundle
 
-      - # --- Installation Phase --- # <-- Corrected
+      - # --- Installation Phase --- # <-- Added hyphen
       # Install the main executable
       # Path: apps/desktop/src-tauri/target/release/MarkFlowy
       - install -Dm755 src-tauri/target/release/MarkFlowy /app/bin/MarkFlowy
@@ -115,10 +87,10 @@ modules:
       # Install AppData file (for Software Center integration)
       - install -Dm644 ${FLATPAK_ID}.appdata.xml /app/share/metainfo/${FLATPAK_ID}.appdata.xml
 
-      - # --- Cleanup --- # <-- Corrected
+      - # --- Cleanup --- # <-- Added hyphen
       # Remove unnecessary build artifacts to reduce size
       - rm -rf /app/bin/yarn /app/bin/yarnpkg # Remove yarn binaries if installed globally via npm
-      - # Consider removing node_modules, target/ if large and not needed runtime # <-- Corrected
+      - # Consider removing node_modules, target/ if large and not needed runtime # <-- Added hyphen
 
     sources:
       # Get the source code from GitHub using the release tag
