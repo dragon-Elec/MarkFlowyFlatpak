@@ -1,0 +1,134 @@
+# Flatpak Manifest for MarkFlowy
+app-id: com.drl990114.markflowy
+runtime: org.gnome.Platform
+runtime-version: '46' # Provides recent GTK/WebKit and hopefully GLIBC >= 2.39
+sdk: org.gnome.Sdk//46
+
+command: MarkFlowy # Executable name from tauri.conf.json
+
+finish-args:
+  # Display server access
+  - --socket=fallback-x11
+  - --socket=wayland
+  # Needed for GL rendering, WebGL
+  - --device=dri
+  # Inter-process communication (needed by Tauri)
+  - --share=ipc
+  # Network access (Needed for AI features, updates)
+  - --share=network
+  # Filesystem access (Start broad, restrict later if possible)
+  - --filesystem=home
+  # D-Bus access for portals (file chooser, etc.)
+  - --talk-name=org.freedesktop.portal.Desktop
+  - --talk-name=org.freedesktop.portal.Documents
+  # Notifications (if used)
+  # - --talk-name=org.freedesktop.Notifications
+
+# Use shared modules for build tools if available
+# Using rustup to manage the specific Rust toolchain version
+modules:
+  - name: yarn
+    buildsystem: simple
+    build-commands:
+      # Install Yarn v4.8.0 globally within the build sandbox using npm from SDK
+      # Ensure Node v22+ is available in the SDK first. If not, a node module is needed.
+      - npm install -g yarn@4.8.0
+    sources: [] # No sources needed, installed via npm
+
+  - name: markflowy
+    buildsystem: simple
+    # Build options: Allow network access during build, define caches
+    build-options:
+      prepend-path: /app/bin # Ensure yarn installed above is in path
+      append-path: /app/bin # Add /app/bin for rustup/cargo
+      build-args:
+        - --share=network
+      env:
+        CARGO_HOME: /run/build/markflowy/cargo # Cargo cache location
+        RUSTUP_HOME: /run/build/markflowy/rustup # Rustup cache location
+        YARN_CACHE_FOLDER: /run/build/markflowy/yarn-cache # Yarn cache location
+        # Ensure Rust builds in release mode and strips symbols
+        RUSTFLAGS: "-C strip=symbols -D warnings"
+
+    build-commands:
+      # --- Install Build Dependencies ---
+      # List derived from .github/workflows/tauri-release.yml
+      - apt-get update && apt-get install -y --no-install-recommends apt-utils # Ensure apt-utils for recommends handling
+      - apt-get install -y --no-install-recommends \
+          build-essential \
+          pkg-config \
+          libssl-dev \
+          libwebkit2gtk-4.1-dev \
+          libappindicator3-dev \
+          patchelf \
+          libgtk-3-dev \
+          librsvg2-dev \
+          libxcb-shape0-dev \
+          libxcb-xfixes0-dev \
+          libsoup-3.0 \
+          javascriptcoregtk-4.1 \
+          webkit2gtk-4.1 \
+          libfreetype6-dev \
+          libfontconfig1-dev \
+          # Add curl/ca-certificates if needed for rustup download
+          curl \
+          ca-certificates
+
+      # --- Setup Rust Toolchain ---
+      # Install rustup if not present (should be in recent SDKs) or ensure it's usable
+      - export PATH=$PATH:/usr/bin # Ensure standard tools are found
+      # Set the specific toolchain required by the project
+      - rustup toolchain install 1.85 --profile minimal
+      - rustup default 1.85
+
+      # --- Frontend & Backend Build ---
+      # Install Node.js dependencies using Yarn (v4.8.0 installed in previous module)
+      - yarn install --frozen-lockfile --ignore-engines # --ignore-engines might be needed if SDK node isn't exactly v22
+
+      # Build the frontend/shared packages (as defined in root package.json build script)
+      - yarn build
+
+      # Navigate to the desktop app directory
+      - cd apps/desktop
+
+      # Build the Tauri application in release mode without bundling (deb/AppImage)
+      # This invokes `cargo tauri build ...` internally
+      - yarn tauri build --release --no-bundle
+
+      # --- Installation Phase ---
+      # Install the main executable
+      # Path: apps/desktop/src-tauri/target/release/MarkFlowy
+      - install -Dm755 src-tauri/target/release/MarkFlowy /app/bin/MarkFlowy
+
+      # Install the .desktop file
+      # !!! VERIFY THIS PATH - Tauri might place it differently with --no-bundle !!!
+      # Guessing it might still create a minimal bundle structure
+      # Use the correct App ID
+      - install -Dm644 src-tauri/target/release/bundle/linux/${FLATPAK_ID}.desktop /app/share/applications/${FLATPAK_ID}.desktop
+
+      # Install icons (from source checkout, as defined in tauri.conf.json)
+      - install -Dm644 src-tauri/icons/32x32.png /app/share/icons/hicolor/32x32/apps/${FLATPAK_ID}.png
+      - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png
+      # Add other sizes if present (e.g., 64x64, 256x256, 512x512)
+      - install -Dm644 src-tauri/icons/512x512.png /app/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png
+      # Install scalable icon if available (Check if icons/icon.svg exists)
+      # - install -Dm644 src-tauri/icons/icon.svg /app/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg
+
+      # Install AppData file (for Software Center integration)
+      - install -Dm644 ${FLATPAK_ID}.appdata.xml /app/share/metainfo/${FLATPAK_ID}.appdata.xml
+
+      # --- Cleanup ---
+      # Remove unnecessary build artifacts to reduce size
+      - rm -rf /app/bin/yarn /app/bin/yarnpkg # Remove yarn binaries if installed globally via npm
+      # Consider removing node_modules, target/ if large and not needed runtime
+
+    sources:
+      # Get the source code from GitHub using the release tag
+      - type: git
+        url: https://github.com/drl990114/MarkFlowy.git
+        tag: v0.24.0 # Use the specific version tag from the release
+        commit: 8ad64ac # Pin to exact commit for reproducibility
+
+      # Source for the AppData file (create this file alongside the manifest)
+      - type: file
+        path: com.drl990114.markflowy.appdata.xml
