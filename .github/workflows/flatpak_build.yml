@@ -2,8 +2,7 @@
 name: Build Flatpak
 
 # Define when this workflow should run.
-# We'll trigger it on pushes to the main branch,
-# but triggering on 'release' creation is also a common pattern for Flatpak.
+# We'll trigger it on pushes to the main branch.
 on:
   push:
     branches:
@@ -19,14 +18,8 @@ jobs:
 
     steps:
       # --- Step 1: Checkout the source code ---
-      # This action fetches the code from your repository
       - name: Checkout code
         uses: actions/checkout@v4
-        # If your manifest uses a specific tag/commit (like v0.24.0),
-        # you might need to fetch history or tags.
-        # If the manifest *always* builds the current commit, default checkout is fine.
-        # Let's assume for now it builds the current branch/commit.
-        # If you trigger on tags/releases, the checkout action will get the correct tag.
 
       # --- Step 2: Install Flatpak and Flatpak Builder ---
       # These tools are needed on the GitHub Actions runner itself
@@ -35,21 +28,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
 
-      # --- Step 3: Install the necessary SDKs ---
-      # The SDKs required by your manifest are installed *inside* the Flatpak build environment
-      # but the builder needs to download/access them. We pre-install them here on the runner
-      # to make the build faster and ensure the SDK is available.
-      - name: Install Flatpak SDKs
-        run: |
-          flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          # Install the specific SDK version required by your manifest (GNOME 46 in this case)
-          flatpak install flathub org.gnome.Sdk//46 -y --noninteractive
-          flatpak install flathub org.gnome.Platform//46 -y --noninteractive # Also need the platform runtime
-
-      # --- Step 4: Prepare Flatpak Files ---
+      # --- Step 3: Prepare Flatpak Files ---
       # Ensure the manifest and appdata files are in the correct location.
-      # If you've committed them to your repo root, they'll be here automatically.
-      # If they are in a subdirectory (e.g., 'flatpak/'), adjust the build command path.
       # Assuming com.drl990114.markflowy.yaml and com.drl990114.markflowy.appdata.xml are in the repo root.
       - name: Verify Flatpak files existence
         run: |
@@ -57,20 +37,18 @@ jobs:
           ls com.drl990114.markflowy.appdata.xml
         # This step just checks if the files are where expected after checkout.
 
-      # --- Step 5: Build the Flatpak application ---
+      # --- Step 4: Build the Flatpak application ---
       # Run flatpak-builder using your manifest file.
       # --build-dir: directory for build artifacts
       # --repo: directory where the resulting flatpak repository will be created
       # --force-clean: cleans the build directory before starting
+      # Flatpak-builder will download the necessary SDK/Runtime (GNOME 46) itself.
       - name: Run Flatpak Builder
         run: |
           flatpak-builder --force-clean --repo=repo build-dir com.drl990114.markflowy.yaml
-        # Note: This command will download all sources and run build commands defined in the manifest.
-        # It might take some time, especially on the first run as caches are built.
-        # If this step fails, check the logs in the GitHub Actions UI for error messages.
-        # These logs correspond to the console output you'd see running flatpak-builder locally.
+        # If this step fails, check the logs in the GitHub Actions UI.
 
-      # --- Step 6: Archive and upload the built repository ---
+      # --- Step 5: Archive and upload the built repository ---
       # This makes the resulting 'repo' directory available for download from the GitHub Actions run page.
       - name: Upload Flatpak repository artifact
         uses: actions/upload-artifact@v4
@@ -80,7 +58,7 @@ jobs:
           # Optional: configure retention days if needed
           # retention-days: 7
 
-      # --- Step 7: (Optional) Create a .flatpak file for easy installation ---
+      # --- Step 6: (Optional) Create a .flatpak file for easy installation ---
       # An alternative to exporting a repo is creating a single .flatpak file.
       # This might be easier for users to install directly.
       # Requires flatpak version >= 1.0.
