@@ -87,7 +87,7 @@ modules:
       - type: git
         url: https://github.com/drl990114/MarkFlowy.git
         tag: v0.24.0 # Use the specific version tag from the release
-        commit: 8ad64ac # Pin to exact commit for reproducibility
+        commit: 8ad64ac55c9f8e32ede904899bae5ec4ff8d4c25 # Pin to exact commit for reproducibility
 
       # Source for the AppData file (create this file alongside the manifest)
       - type: file
