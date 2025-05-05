@@ -30,8 +30,6 @@ modules:
   - name: yarn
     buildsystem: simple
     build-commands:
-      # Install Yarn v4.8.0 globally within the build sandbox using npm from SDK
-      # Ensure Node v22+ is available in the SDK first. If not, a node module is needed.
       - npm install -g yarn@4.8.0
     sources: [] # No sources needed, installed via npm
 
@@ -51,9 +49,7 @@ modules:
         RUSTFLAGS: "-C strip=symbols -D warnings"
 
     build-commands:
-      - # --- Install Build Dependencies --- #
-      # List derived from .github/workflows/tauri-release.yml
-      - apt-get update && apt-get install -y --no-install-recommends apt-utils # Ensure apt-utils for recommends handling
+      - apt-get update && apt-get install -y --no-install-recommends apt-utils
       - apt-get install -y --no-install-recommends \
           build-essential \
           pkg-config \
@@ -68,57 +64,23 @@ modules:
           webkit2gtk-4.1 \
           libfreetype6-dev \
           libfontconfig1-dev \
-          # Add curl/ca-certificates if needed for rustup download
           curl \
           ca-certificates
-
-      - # --- Setup Rust Toolchain --- #
-      # Install rustup if not present (should be in recent SDKs) or ensure it's usable
-      - export PATH=$PATH:/usr/bin # Ensure standard tools are found
-      # Set the specific toolchain required by the project
+      - export PATH=$PATH:/usr/bin
       - rustup toolchain install 1.85 --profile minimal
       - rustup default 1.85
-
-      - # --- Frontend & Backend Build --- #
-      # Install Node.js dependencies using Yarn (v4.8.0 installed in previous module)
-      - yarn install --frozen-lockfile --ignore-engines # --ignore-engines might be needed if SDK node isn't exactly v22
-
-      # Build the frontend/shared packages (as defined in root package.json build script)
+      - yarn install --frozen-lockfile --ignore-engines
       - yarn build
-
-      # Navigate to the desktop app directory
       - cd apps/desktop
-
-      # Build the Tauri application in release mode without bundling (deb/AppImage)
-      # This invokes `cargo tauri build ...` internally
       - yarn tauri build --release --no-bundle
-
-      - # --- Installation Phase --- #
-      # Install the main executable
-      # Path: apps/desktop/src-tauri/target/release/MarkFlowy
       - install -Dm755 src-tauri/target/release/MarkFlowy /app/bin/MarkFlowy
-
-      # Install the .desktop file
-      # !!! VERIFY THIS PATH - Tauri might place it differently with --no-bundle !!!
-      # Guessing it might still create a minimal bundle structure
-      # Use the correct App ID
       - install -Dm644 src-tauri/target/release/bundle/linux/${FLATPAK_ID}.desktop /app/share/applications/${FLATPAK_ID}.desktop
-
-      # Install icons (from source checkout, as defined in tauri.conf.json)
       - install -Dm644 src-tauri/icons/32x32.png /app/share/icons/hicolor/32x32/apps/${FLATPAK_ID}.png
       - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png
-      # Add other sizes if present (e.g., 64x64, 256x256, 512x512)
       - install -Dm644 src-tauri/icons/512x512.png /app/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png
-      # Install scalable icon if available (Check if icons/icon.svg exists)
-      # - install -Dm644 src-tauri/icons/icon.svg /app/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg
-
-      # Install AppData file (for Software Center integration)
+      # - install -Dm644 src-tauri/icons/icon.svg /app/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg # <-- Keep this one commented if you don't have the file
       - install -Dm644 ${FLATPAK_ID}.appdata.xml /app/share/metainfo/${FLATPAK_ID}.appdata.xml
-
-      - # --- Cleanup --- #
-      # Remove unnecessary build artifacts to reduce size
-      - rm -rf /app/bin/yarn /app/bin/yarnpkg # Remove yarn binaries if installed globally via npm
-      - # Consider removing node_modules, target/ if large and not needed runtime #
+      - rm -rf /app/bin/yarn /app/bin/yarnpkg
 
     sources:
       # Get the source code from GitHub using the release tag
