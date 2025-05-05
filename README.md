@@ -87,6 +87,13 @@ The development of **MarkFlowy** cannot be separated from these contributors. Th
         </a>
     </td>
     <td align="center">
+        <a href="https://github.com/dragon-Elec">
+            <img src="https://avatars.githubusercontent.com/u/197374270?v=4" width="90;" alt="dragon-Elec"/>
+            <br />
+            <sub><b>Null</b></sub>
+        </a>
+    </td>
+    <td align="center">
         <a href="https://github.com/AdySnowflake">
             <img src="https://avatars.githubusercontent.com/u/163967164?v=4" width="90;" alt="AdySnowflake"/>
             <br />
@@ -119,13 +126,6 @@ The development of **MarkFlowy** cannot be separated from these contributors. Th
             <img src="https://avatars.githubusercontent.com/u/106591791?v=4" width="90;" alt="chiefass"/>
             <br />
             <sub><b>Chiefass</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/dragon-Elec">
-            <img src="https://avatars.githubusercontent.com/u/197374270?v=4" width="90;" alt="dragon-Elec"/>
-            <br />
-            <sub><b>Null</b></sub>
         </a>
     </td></tr>
 <tr>
