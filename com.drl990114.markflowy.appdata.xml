@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.drl990114.markflowy</id>
+
+  <name>MarkFlowy</name>
+  <summary>Modern markdown cross platform editor application</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0</project_license>
+  <developer_name>drl990114 and contributors</developer_name>
+
+  <description>
+    <p>MarkFlowy is a modern, cross-platform Markdown editor application built with Tauri, React, and Rust. It focuses on being simpler, more intelligent, and helps build fast and efficient workflows.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Built-in AI support (DeepSeek, ChatGPT) for conversations, translation, summaries</li>
+      <li>Lightweight and performant (Tauri-based, <10MB installer)</li>
+      <li>High availability editor based on Remirror</li>
+      <li>Multiple editing modes (Source code, WYSIWYG, Preview)</li>
+      <li>Custom theme support</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">com.drl990114.markflowy.desktop</launchable>
+
+  <!-- Add screenshots from the project README or website -->
+  <!-- <screenshots>
+    <screenshot type="default">
+      <image>https://URL_TO_SCREENSHOT1.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://URL_TO_SCREENSHOT2.png</image>
+    </screenshot>
+  </screenshots> -->
+
+  <url type="homepage">https://markflowy.vercel.app/</url>
+  <url type="bugtracker">https://github.com/drl990114/MarkFlowy/issues</url>
+  <url type="donation">https://github.com/drl990114/MarkFlowy#support</url>
+  <url type="help">https://github.com/drl990114/MarkFlowy/tree/main/docs</url>
+  <url type="translate">https://github.com/drl990114/MarkFlowy/tree/main/locales</url>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="0.24.0" date="2025-05-01">
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>Support opening files through the 'Open with' menu.</li>
+          <li>Support drag and drop folder in app icon to open.</li>
+        </ul>
+         <p>Fixs:</p>
+        <ul>
+          <li>Fix input chinese cursor instability in chrome.</li>
+          <li>Fix json file edit highlight error.</li>
+        </ul>
+      </description>
+    </release>
+    <!-- Add previous releases if desired -->
+  </releases>
+
+  <!-- Add provides for file types if desired for MIME integration -->
+  <!-- <provides>
+    <mediatype>text/markdown</mediatype>
+    <mediatype>application/json</mediatype>
+  </provides> -->
+
+</component>
