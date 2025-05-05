@@ -4,6 +4,10 @@ runtime: org.gnome.Platform
 runtime-version: '46' # Provides recent GTK/WebKit and hopefully GLIBC >= 2.39
 sdk: org.gnome.Sdk//46
 
+sources:
+  - type: file
+    path: shared-modules.json
+
 command: MarkFlowy # Executable name from tauri.conf.json
 
 finish-args:
