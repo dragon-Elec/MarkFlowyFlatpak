@@ -31,6 +31,8 @@ finish-args:
 # Use shared modules for build tools if available
 # Using rustup to manage the specific Rust toolchain version
 modules:
+  - name: node
+    # The build instructions are loaded from the shared-modules.json file
   - name: yarn
     buildsystem: simple
     build-commands:
