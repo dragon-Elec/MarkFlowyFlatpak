@@ -51,7 +51,7 @@ modules:
         RUSTFLAGS: "-C strip=symbols -D warnings"
 
     build-commands:
-      # --- Install Build Dependencies ---
+      - # --- Install Build Dependencies --- # <-- Corrected
       # List derived from .github/workflows/tauri-release.yml
       - apt-get update && apt-get install -y --no-install-recommends apt-utils # Ensure apt-utils for recommends handling
       - apt-get install -y --no-install-recommends \
@@ -63,8 +63,6 @@ modules:
           patchelf \
           libgtk-3-dev \
           librsvg2-dev \
-          libxcb-shape0-dev \
-          libxcb-xfixes0-dev \
           libsoup-3.0 \
           javascriptcoregtk-4.1 \
           webkit2gtk-4.1 \
@@ -74,14 +72,14 @@ modules:
           curl \
           ca-certificates
 
-      # --- Setup Rust Toolchain ---
+      - # --- Setup Rust Toolchain --- # <-- Corrected
       # Install rustup if not present (should be in recent SDKs) or ensure it's usable
       - export PATH=$PATH:/usr/bin # Ensure standard tools are found
       # Set the specific toolchain required by the project
       - rustup toolchain install 1.85 --profile minimal
       - rustup default 1.85
 
-      # --- Frontend & Backend Build ---
+      - # --- Frontend & Backend Build --- # <-- Corrected
       # Install Node.js dependencies using Yarn (v4.8.0 installed in previous module)
       - yarn install --frozen-lockfile --ignore-engines # --ignore-engines might be needed if SDK node isn't exactly v22
 
@@ -95,7 +93,7 @@ modules:
       # This invokes `cargo tauri build ...` internally
       - yarn tauri build --release --no-bundle
 
-      # --- Installation Phase ---
+      - # --- Installation Phase --- # <-- Corrected
       # Install the main executable
       # Path: apps/desktop/src-tauri/target/release/MarkFlowy
       - install -Dm755 src-tauri/target/release/MarkFlowy /app/bin/MarkFlowy
@@ -117,10 +115,10 @@ modules:
       # Install AppData file (for Software Center integration)
       - install -Dm644 ${FLATPAK_ID}.appdata.xml /app/share/metainfo/${FLATPAK_ID}.appdata.xml
 
-      # --- Cleanup ---
+      - # --- Cleanup --- # <-- Corrected
       # Remove unnecessary build artifacts to reduce size
       - rm -rf /app/bin/yarn /app/bin/yarnpkg # Remove yarn binaries if installed globally via npm
-      # Consider removing node_modules, target/ if large and not needed runtime
+      - # Consider removing node_modules, target/ if large and not needed runtime # <-- Corrected
 
     sources:
       # Get the source code from GitHub using the release tag
